@@ -9,15 +9,19 @@ InterruptIn Confirm(D8);
 
 AnalogOut Aout(D7);
 
-EventQueue queue(32 * EVENTS_EVENT_SIZE);
+EventQueue queue;
+EventQueue ADCQueue;
 Thread t;
-
 //double curr_sel = 0.5; 
 int curr = 1;
 float ADCdata[500];
 
 
-
+void print_ADC(){
+    //printf("start2\r\n");
+    for (int i = 0; i < 500; i++)  
+        printf("%f\r\n", ADCdata[i]);
+}
 void up_()
 {   
     // if (curr_sel < 1.0)
@@ -39,7 +43,10 @@ void confirm_()
     double curr_sel = 1.0/curr;
     uLCD.cls();
     uLCD.printf("%f\r\n", curr_sel);
-    
+
+    Thread t_ADC;
+    // t_ADC.start(callback(&ADCQueue, &EventQueue::dispatch_forever));
+
     // int count = 0;
     // period without waiting = 2.320 ms
     //cutoff freq. = 1 / (2 * pi * (4700 + 3900) * 0.047 * 10^-6) = 393.75 Hz
@@ -68,16 +75,15 @@ void confirm_()
             {
                 ADCdata[finish++] = Aout;
             }
-            
+
             if (a && finish == 500)
             {
                 a= false;
-                //printf ("%d\r\n", freq);
-                //ThisThread::sleep_for(500ms);
-                for (int i = 0; i < 500; i++)
-                    {
-                        printf("%f\r\n", ADCdata[i]);
-                    }
+                //printf("start\r\n");
+                //ADCQueue.event(print_ADC);
+                t_ADC.start(print_ADC);
+                // for (int i = 0; i < 500; i++)  
+                //     printf("%f\r\n", ADCdata[i]);
             }
 
             wait_us(520); //525
