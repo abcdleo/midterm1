@@ -99,7 +99,7 @@ int main()
     // {
         // while_num++;
 
-    uLCD.printf("Hello");
+    //uLCD.printf("Hello");
     t.start(callback(&queue, &EventQueue::dispatch_forever));
 
     Up.rise(&up_);
