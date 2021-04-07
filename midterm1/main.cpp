@@ -10,14 +10,13 @@ InterruptIn Confirm(D8);
 AnalogOut Aout(D7);
 
 EventQueue queue(32 * EVENTS_EVENT_SIZE);
-
-double curr_sel = 0.5; 
-int curr = 1;
-
 Thread t;
-bool wave_start = false;
-bool a = true;
-int while_num = -1, finish = 0;
+
+//double curr_sel = 0.5; 
+int curr = 1;
+float ADCdata[500];
+
+
 
 void up_()
 {   
@@ -35,7 +34,9 @@ void down_()
 }
 void confirm_()
 {
-    curr_sel = 1.0/curr;
+    int while_num = -1, finish = 0;
+    bool a = true;
+    double curr_sel = 1.0/curr;
     uLCD.cls();
     uLCD.printf("%f\r\n", curr_sel);
     
@@ -44,8 +45,10 @@ void confirm_()
     //cutoff freq. = 1 / (2 * pi * (4700 + 3900) * 0.047 * 10^-6) = 393.75 Hz
     //period = 2.54 ms
     while(1)
+    {
         for (int count = 1; count<=240; count++)
         {
+            while_num++;
             // if (count == 240)
             //     count = 0;
             // else
@@ -55,10 +58,32 @@ void confirm_()
                 Aout = (240 - count) / (1.0f * 1.1 * 80 * curr_sel);
             else 
                 Aout = 1 / 1.0f / 1.1;
-            wait_us(10);
-            // count++;
+
+
+            if (finish >= 500) { 
+                while_num = 0;
+                finish = 0;
+            }
+            else if (while_num % 2 == 0)
+            {
+                ADCdata[finish++] = Aout;
+            }
+            
+            if (a && finish == 500)
+            {
+                a= false;
+                //printf ("%d\r\n", freq);
+                //ThisThread::sleep_for(500ms);
+                for (int i = 0; i < 500; i++)
+                    {
+                        printf("%f\r\n", ADCdata[i]);
+                    }
+            }
+
+            wait_us(520); //525
         }
-    
+
+    }
 }
 int main()
 {  
